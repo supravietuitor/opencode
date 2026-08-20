@@ -22,6 +22,8 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build Windows CLI
+        env:
+          OPENCODE_VERSION: 1.18.18
         run: bun run packages/opencode/script/build.ts --single --skip-embed-web-ui
 
       - name: Upload Windows CLI
