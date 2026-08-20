@@ -213,6 +213,14 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         },
         options: { headerTimeout: OPENAI_HEADER_TIMEOUT_DEFAULT },
       }),
+    newapi: () =>
+      Effect.succeed({
+        autoload: false,
+        // New API Codex channels only expose the OpenAI Responses endpoint.
+        async getModel(sdk: any, modelID: string, _options?: Record<string, any>) {
+          return sdk.responses(modelID)
+        },
+      }),
     meta: () =>
       Effect.succeed({
         autoload: false,

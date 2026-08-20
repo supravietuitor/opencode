@@ -314,6 +314,36 @@ it.instance("getModel returns model for valid provider/model", () =>
   }),
 )
 
+it.instance(
+  "newapi custom provider uses the Responses API",
+  Effect.gen(function* () {
+    const provider = yield* Provider.Service
+    const model = yield* provider.getModel(ProviderV2.ID.make("newapi"), ModelV2.ID.make("gpt-5.6-luna"))
+    const language = yield* provider.getLanguage(model)
+    expect((language as { provider: string }).provider).toBe("newapi.responses")
+    expect(languageBaseURL(language)).toBe("https://sub.ih06.com/v1")
+  }),
+  {
+    config: {
+      provider: {
+        newapi: {
+          name: "New API",
+          npm: "@ai-sdk/openai",
+          env: [],
+          models: {
+            "gpt-5.6-luna": {
+              name: "GPT-5.6 Luna",
+              tool_call: true,
+              limit: { context: 128000, output: 16000 },
+            },
+          },
+          options: { apiKey: "test-key", baseURL: "https://sub.ih06.com/v1" },
+        },
+      },
+    },
+  },
+)
+
 it.instance("getModel throws ModelNotFoundError for invalid model", () =>
   Effect.gen(function* () {
     yield* set("ANTHROPIC_API_KEY", "test-api-key")
