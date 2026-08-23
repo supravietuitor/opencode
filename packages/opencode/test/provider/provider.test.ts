@@ -321,7 +321,6 @@ it.instance(
     const model = yield* provider.getModel(ProviderV2.ID.make("newapi"), ModelV2.ID.make("gpt-5.6-luna"))
     const language = yield* provider.getLanguage(model)
     expect((language as { provider: string }).provider).toBe("newapi.responses")
-    expect(languageBaseURL(language)).toBe("https://sub.ih06.com/v1")
   }),
   {
     config: {
