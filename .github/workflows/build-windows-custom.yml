@@ -1,0 +1,50 @@
+name: build-windows-custom
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version reported by the custom CLI; must match OpenChamber's pinned SDK"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Validate source version
+        shell: bash
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          SOURCE_VERSION=$(node -p "require('./packages/opencode/package.json').version")
+          if [[ "$SOURCE_VERSION" != "$REQUESTED_VERSION" ]]; then
+            echo "Source OpenCode version $SOURCE_VERSION does not match requested $REQUESTED_VERSION"
+            echo "Sync the fork to the matching upstream tag before building."
+            exit 1
+          fi
+
+      - name: Build Windows CLI
+        env:
+          OPENCODE_VERSION: ${{ inputs.version }}
+        run: bun run packages/opencode/script/build.ts --single --skip-embed-web-ui
+
+      - name: Upload Windows CLI
+        uses: actions/upload-artifact@v4
+        with:
+          name: opencode-windows-custom
+          path: packages/opencode/dist/opencode-windows-x64/bin/opencode.exe
